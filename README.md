@@ -20,7 +20,7 @@ CLI tool to monitor web services health (HTTP status, response time) with JSON c
 Clone the repository:
 
 ```bash
-git clone [https://github.com/kamisamades/web-healthcheck.git](https://github.com/kamisamades/web-healthcheck.git)
+git clone https://github.com/kamisamades/web-healthcheck.git
 cd web-healthcheck
 ```
 
@@ -46,7 +46,7 @@ pip install -r requirements.txt
   "services": [
     {
       "name": "Example",
-      "url": "[https://example.com](https://example.com)",
+      "url": "https://example.com",
       "timeout": 5,
       "expected_status": 200,
       "warn_threshold_ms": 500
@@ -85,14 +85,14 @@ The tool reads a `config.json` file in the current directory (or a custom path v
   "services": [
     {
       "name": "Homepage",
-      "url": "[https://example.com](https://example.com)",
+      "url": "https://example.com",
       "timeout": 5,
       "expected_status": 200,
       "warn_threshold_ms": 500
     },
     {
       "name": "API Health",
-      "url": "[https://api.example.com/health](https://api.example.com/health)",
+      "url": "https://api.example.com/health",
       "timeout": 3,
       "expected_status": 200,
       "warn_threshold_ms": 300
