@@ -127,6 +127,7 @@ Available options:
 
 - `--config PATH` → custom config file path (default: `config.json`)
 - `--format json` → output results as JSON instead of rich table
+- `--quiet` → only show WARN and DOWN services
 
 ## Project structure
 
@@ -157,6 +158,10 @@ python healthcheck.py --config path/to/custom-config.json
 ```
 
 ## Changelog
+
+### v1.2.0 (2026-09-25)
+
+- Add option `--quiet` : only show WARN and DOWN services
 
 ### v1.1.0 (2026-09-25)
 

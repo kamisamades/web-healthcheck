@@ -14,18 +14,18 @@ VERSION = "1.1"
 import json
 from datetime import datetime, timezone
 
-def print_json_report(results: list) -> None:
+def print_json_report(all_results: list, filtered_results: list) -> None:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    ok_count = sum(1 for r in results if r["status"] == "OK")
-    warn_count = sum(1 for r in results if r["status"] == "WARN")
-    down_count = sum(1 for r in results if r["status"] == "DOWN")
+    ok_count = sum(1 for r in all_results if r["status"] == "OK")
+    warn_count = sum(1 for r in all_results if r["status"] == "WARN")
+    down_count = sum(1 for r in all_results if r["status"] == "DOWN")
 
     report = {
         "timestamp": now,
-        "services": results,
+        "services": filtered_results,
         "summary": {
-            "total": len(results),
+            "total": len(all_results),
             "ok": ok_count,
             "warn": warn_count,
             "down": down_count,
@@ -125,6 +125,11 @@ def main():
         default="table",
         help="Output format: table (default) or json",
     )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Only show WARN and DOWN services",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -135,8 +140,15 @@ def main():
         raise SystemExit(0)
 
     results = [check_service(s) for s in services]
+    filtered_results = results
+    if args.quiet:
+        filtered_results = [
+            r for r in results if r["status"] in ("WARN", "DOWN")
+        ]
+
     if args.format == "json":
-        print_json_report(results)
+        print_json_report(results, filtered_results)
+
     else:
         print_report(results)
 
