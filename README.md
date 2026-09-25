@@ -159,6 +159,10 @@ python healthcheck.py --config path/to/custom-config.json
 
 ## Changelog
 
+### v1.3.0 (2026-09-25)
+
+- Add option `--watch N` → run checks every N seconds (watch mode)
+
 ### v1.2.0 (2026-09-25)
 
 - Add option `--quiet` : only show WARN and DOWN services
