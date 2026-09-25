@@ -9,6 +9,31 @@ from rich.table import Table
 
 console = Console()
 
+VERSION = "1.1"
+
+import json
+from datetime import datetime, timezone
+
+def print_json_report(results: list) -> None:
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    ok_count = sum(1 for r in results if r["status"] == "OK")
+    warn_count = sum(1 for r in results if r["status"] == "WARN")
+    down_count = sum(1 for r in results if r["status"] == "DOWN")
+
+    report = {
+        "timestamp": now,
+        "services": results,
+        "summary": {
+            "total": len(results),
+            "ok": ok_count,
+            "warn": warn_count,
+            "down": down_count,
+        },
+    }
+
+    print(json.dumps(report, indent=2))
+
 def load_config(config_path: str) -> dict:
     path = Path(config_path)
     if not path.exists():
@@ -62,7 +87,7 @@ def check_service(service: dict) -> dict:
         }
 
 def print_report(results: list) -> None:
-    table = Table(title="Web Healthcheck Results")
+    table = Table(title=f"Web Healthcheck Results (v{VERSION})")
     table.add_column("Service", style="cyan")
     table.add_column("Status", style="magenta")
     table.add_column("Time", justify="right")
@@ -94,6 +119,12 @@ def main():
         default="config.json",
         help="Path to config file (default: config.json)",
     )
+    parser.add_argument(
+        "--format",
+        choices=["table", "json"],
+        default="table",
+        help="Output format: table (default) or json",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -104,7 +135,10 @@ def main():
         raise SystemExit(0)
 
     results = [check_service(s) for s in services]
-    print_report(results)
+    if args.format == "json":
+        print_json_report(results)
+    else:
+        print_report(results)
 
     any_down = any(r["status"] == "DOWN" for r in results)
     raise SystemExit(1 if any_down else 0)

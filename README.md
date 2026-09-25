@@ -123,10 +123,9 @@ The tool reads a `config.json` file in the current directory (or a custom path v
 python healthcheck.py --help
 ```
 
-Available options (to implement in v1.1+):
+Available options:
 
 - `--config PATH` → custom config file path (default: `config.json`)
-- `--watch N` → run checks every N seconds
 - `--format json` → output results as JSON instead of rich table
 
 ## Project structure
@@ -159,6 +158,10 @@ python healthcheck.py --config path/to/custom-config.json
 
 ## Changelog
 
+### v1.1.0 (2026-09-25)
+
+- Add option `--format` (table / json) : output results as rich table / JSON
+
 ### v1.0.0 (2026-09-25)
 
 - Initial release
@@ -173,5 +176,5 @@ MIT License – see [LICENSE](LICENSE) file for details.
 
 ## Author
 
-Author: [Maurice LECON](https://github.com/kamisamades).
+Author: [Maurice LECON](https://github.com/kamisamades). 
 Web : [lebrun.dev](lebrun.dev)
