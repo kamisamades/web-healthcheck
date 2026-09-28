@@ -1,14 +1,23 @@
 # Web Healthcheck
 
-CLI tool to monitor web services health (HTTP status, response time) with JSON config and rich console output.
+CLI tool to monitor web services health (HTTP status, response time) with JSON config and rich console output, plus domain investigation features (DNS, SPF, DMARC, WHOIS).
 
 ## Features
+
+### Healthcheck
 
 - Check multiple HTTP/HTTPS endpoints from a JSON configuration file
 - Measure response times and compare HTTP status codes
 - Colorful, structured console report (OK / WARN / DOWN)
 - Exit codes suitable for CI/CD pipelines (0 = all OK, 1 = at least one DOWN)
-- Easy to extend: webhooks, dashboards, notifications
+- Watch mode: periodic checks every N seconds
+
+### Domain information
+
+- Resolve common DNS records: A, AAAA, NS, MX, TXT, SOA, CNAME
+- Detect SPF and DMARC records for email authentication
+- Retrieve WHOIS information: creation date, expiration date, registrar, name servers, status
+- Output as rich table or JSON
 
 ## Requirements
 
@@ -39,7 +48,9 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Create a `config.json` file (see [Configuration](#configuration)):
+### Healthcheck
+
+1. Create a `config.json` file:
 
 ```json
 {
@@ -74,11 +85,59 @@ Exit codes:
 - `0` → all services are OK
 - `1` → at least one service is DOWN
 
+### Domain information
+
+Query DNS and WHOIS information for a domain:
+
+```bash
+python domain_info.py example.com
+```
+
+Example output (table):
+
+```text
+Domain: example.com
+
+DNS Records
+-----------
+A:      93.184.216.34
+AAAA:   2606:2800:220:1:248:1893:25c8:1948
+NS:     a.iana-servers.net
+        b.iana-servers.net
+MX:     10 mail.example.com
+CNAME:  None
+SOA:    Master: ns1.example.com
+        Responsible: hostmaster.example.com
+        Serial: 2024092801
+TXT:    v=spf1 include:_spf.example.com ~all
+
+Email Security
+--------------
+SPF:    v=spf1 include:_spf.example.com ~all
+DMARC:  v=DMARC1; p=reject; rua=mailto:dmarc@example.com
+
+WHOIS
+-----
+Created:    1995-08-14T04:00:00Z
+Expires:    2028-08-13T04:00:00Z
+Registrar:  Example Registrar, Inc.
+Name servers: ['ns1.example.com', 'ns2.example.com']
+Status:     ['clientDeleteProhibited', 'clientTransferProhibited']
+```
+
+JSON output:
+
+```bash
+python domain_info.py example.com --format json
+```
+
 ## Configuration
+
+### Healthcheck config
 
 The tool reads a `config.json` file in the current directory (or a custom path via `--config`).
 
-### Example `config.json`
+#### Example `config.json`
 
 ```json
 {
@@ -101,7 +160,7 @@ The tool reads a `config.json` file in the current directory (or a custom path v
 }
 ```
 
-### Service fields
+#### Service fields
 
 | Field              | Type    | Required | Default | Description |
 |--------------------|---------|----------|---------|-------------|
@@ -111,13 +170,15 @@ The tool reads a `config.json` file in the current directory (or a custom path v
 | `expected_status`  | number  | no       | `200`   | Expected HTTP status code |
 | `warn_threshold_ms`| number  | no       | `1000`  | Response time (ms) above which status becomes WARN |
 
-### Status logic
+#### Status logic
 
 - **OK**: HTTP status matches `expected_status` and response time ≤ `warn_threshold_ms`
 - **WARN**: HTTP status matches but response time > `warn_threshold_ms`
 - **DOWN**: HTTP status mismatch, timeout, or network error
 
 ## CLI options
+
+### healthcheck.py
 
 ```bash
 python healthcheck.py --help
@@ -128,13 +189,25 @@ Available options:
 - `--config PATH` → custom config file path (default: `config.json`)
 - `--format json` → output results as JSON instead of rich table
 - `--quiet` → only show WARN and DOWN services
+- `--watch N` → run checks every N seconds (watch mode)
+
+### domain_info.py
+
+```bash
+python domain_info.py --help
+```
+
+Available options:
+
+- `--format json` → output results as JSON instead of rich table
 
 ## Project structure
 
 ```text
 web-healthcheck/
-├─ healthcheck.py       # Main CLI script
-├─ config.json          # Example configuration
+├─ healthcheck.py       # HTTP healthcheck CLI
+├─ domain_info.py       # DNS and WHOIS domain info CLI
+├─ config.json          # Example healthcheck configuration
 ├─ requirements.txt     # Python dependencies
 ├─ README.md            # This file
 └─ LICENSE              # MIT License
@@ -148,7 +221,12 @@ web-healthcheck/
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
+# Healthcheck
 python healthcheck.py
+
+# Domain info
+python domain_info.py example.com
 ```
 
 ### Running with custom config
@@ -159,17 +237,24 @@ python healthcheck.py --config path/to/custom-config.json
 
 ## Changelog
 
-### v1.3.0 (2026-09-25)
+### v1.3.0 (2026-09-28)
 
-- Add option `--watch N` → run checks every N seconds (watch mode)
+- Add `domain_info.py` for DNS and WHOIS domain investigation
+- Resolve common DNS records: A, AAAA, NS, MX, TXT, SOA, CNAME
+- Detect SPF and DMARC records for email authentication
+- Retrieve WHOIS information: creation date, expiration date, registrar, name servers, status
+- Output as rich table or JSON
 
 ### v1.2.0 (2026-09-25)
 
-- Add option `--quiet` : only show WARN and DOWN services
+- Add `--watch` mode for periodic checks
+- Add `--format json` option
+- Add `--quiet` option to filter OK services
 
 ### v1.1.0 (2026-09-25)
 
-- Add option `--format` (table / json) : output results as rich table / JSON
+- Add `--format json` option
+- Improve console output with Rich
 
 ### v1.0.0 (2026-09-25)
 
